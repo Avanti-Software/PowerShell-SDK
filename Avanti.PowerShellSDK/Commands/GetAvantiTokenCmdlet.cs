@@ -7,11 +7,11 @@ using Avanti.PowerShellSDK.Models;
 
 namespace Avanti.PowerShellSDK.Commands
 {
-    [Cmdlet(VerbsCommon.Get, "AvantiTokenCmdlet")]
+    [Cmdlet(VerbsCommon.Get, "AvantiToken")]
     [OutputType(typeof(AvantiToken))]
     public sealed class GetAvantiTokenCmdlet : PSCmdlet
     {
-        private readonly HttpClient _httpClient;
+        private HttpClient _httpClient;
 
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
         {
@@ -54,21 +54,22 @@ namespace Avanti.PowerShellSDK.Commands
             ValueFromPipelineByPropertyName = true)]
         public string ClientSecret { get; set; }
 
-        public GetAvantiTokenCmdlet()
+        protected override void BeginProcessing()
         {
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri($"https://avanti.ca/{Company.ToLower()}-api")
+                BaseAddress = new Uri($"https://avanti.ca/{Company}-api")
             };
 
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             _httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Avanti/PowerShellSDK");
-
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Avanti-Software/PowerShell-SDK");
         }
 
         protected override void ProcessRecord()
         {
+            base.ProcessRecord();
+
             var request = new HttpRequestMessage(HttpMethod.Get, "/connect/token");
             var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
 

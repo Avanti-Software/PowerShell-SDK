@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Management.Automation;
 
 namespace Avanti.PowerShellSDK.Commands
 {
-    public sealed class GetAvantiWorkTechExportsCmdlet
+    public sealed class GetAvantiWorkTechExportsCmdlet : BaseAuthenticatedCmdlet
     {
+        protected override void ProcessRecord()
+        {
+            base.ProcessRecord();
+        }
     }
 }
