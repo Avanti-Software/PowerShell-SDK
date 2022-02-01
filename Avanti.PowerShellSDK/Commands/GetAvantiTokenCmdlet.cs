@@ -8,7 +8,7 @@ using Avanti.PowerShellSDK.Models;
 namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Get, "AvantiToken")]
-    [OutputType(typeof(AvantiToken))]
+    [OutputType(typeof(GetAvantiTokenResponse))]
     public sealed class GetAvantiTokenCmdlet : PSCmdlet
     {
         private HttpClient _httpClient;
@@ -68,8 +68,6 @@ namespace Avanti.PowerShellSDK.Commands
 
         protected override void ProcessRecord()
         {
-            base.ProcessRecord();
-
             var request = new HttpRequestMessage(HttpMethod.Get, "/connect/token");
             var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
 
@@ -77,7 +75,7 @@ namespace Avanti.PowerShellSDK.Commands
 
             var stream = response.Content.ReadAsStreamAsync().Result;
 
-            WriteObject(JsonSerializer.Deserialize<AvantiToken>(stream, _jsonSerializerOptions));
+            WriteObject(JsonSerializer.Deserialize<GetAvantiTokenResponse>(stream, _jsonSerializerOptions));
         }
     }
 }
