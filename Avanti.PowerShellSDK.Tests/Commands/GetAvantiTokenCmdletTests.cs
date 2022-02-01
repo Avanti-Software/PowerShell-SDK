@@ -17,6 +17,8 @@ namespace Avanti.PowerShellSDK.Tests.Commands
             };
 
             Assert.IsNotNull(cmdlet);
+
+            Assert.IsNull(cmdlet); // intentional fail
         }
     }
 }
