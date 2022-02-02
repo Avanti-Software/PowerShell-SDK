@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security;
 using System.Text.Json;
 
+using Avanti.PowerShellSDK.Core;
 using Avanti.PowerShellSDK.Models;
+using Avanti.PowerShellSDK.State;
 
 namespace Avanti.PowerShellSDK.Commands
 {
@@ -12,12 +17,6 @@ namespace Avanti.PowerShellSDK.Commands
     public sealed class GetAvantiTokenCmdlet : PSCmdlet
     {
         private HttpClient _httpClient;
-
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
-        {
-            AllowTrailingCommas = false,
-            PropertyNameCaseInsensitive = true
-        };
 
         [Parameter(
             Mandatory = true,
@@ -54,28 +53,79 @@ namespace Avanti.PowerShellSDK.Commands
             ValueFromPipelineByPropertyName = true)]
         public string ClientSecret { get; set; }
 
+        [Parameter(
+            Mandatory = false,
+            Position = 5,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        public string BaseUrl { get; set; }
+
         protected override void BeginProcessing()
         {
+            if (string.IsNullOrEmpty(BaseUrl))
+            {
+                BaseUrl = Constants.DefaultBaseUrl;
+            }
+
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri($"https://avanti.ca/{Company}-api")
+                BaseAddress = new Uri(BaseUrl)
             };
 
-            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            _httpClient.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Avanti-Software/PowerShell-SDK");
+            _httpClient.DefaultRequestHeaders
+                .Accept
+                .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
+
+            SessionState.PSVariable.Set(Constants.AuthenticationKey, null);
         }
 
         protected override void ProcessRecord()
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, "/connect/token");
-            var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
+            var payload = new[]
+            {
+                new KeyValuePair<string, string>("client_id", ClientId),
+                new KeyValuePair<string, string>("client_secret", ClientSecret),
+                new KeyValuePair<string, string>("company", Company),
+                new KeyValuePair<string, string>("device_id", Constants.UserAgent),
+                new KeyValuePair<string, string>("grant_type", "password"),
+                new KeyValuePair<string, string>("username", UserName),
+                new KeyValuePair<string, string>("password", Password)
+            };
 
-            response.EnsureSuccessStatusCode();
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/connect/token")
+            {
+                Content = new FormUrlEncodedContent(payload)
+            };
 
-            var stream = response.Content.ReadAsStreamAsync().Result;
+            var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
+                .GetAwaiter()
+                .GetResult();
 
-            WriteObject(JsonSerializer.Deserialize<GetAvantiTokenResponse>(stream, _jsonSerializerOptions));
+            if (response.IsSuccessStatusCode is false)
+            {
+                ThrowTerminatingError(new ErrorRecord(
+                    new SecurityException(),
+                    Constants.MissingTokenErrorId,
+                    ErrorCategory.AuthenticationError,
+                    null));
+            }
+
+            var stream = response.Content.ReadAsStreamAsync()
+                .GetAwaiter()
+                .GetResult();
+
+            var tokenResponse = JsonSerializer.Deserialize<GetAvantiTokenResponse>(stream);
+
+            SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
+            {
+                BaseUrl = BaseUrl,
+                ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
+                Token = tokenResponse.AccessToken
+            });
+
+            WriteObject(tokenResponse);
         }
     }
 }

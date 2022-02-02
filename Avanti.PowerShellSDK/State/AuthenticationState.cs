@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security;
 
 namespace Avanti.PowerShellSDK.State
 {
@@ -9,6 +8,6 @@ namespace Avanti.PowerShellSDK.State
 
         public DateTimeOffset ExpiresAt { get; set; }
 
-        public SecureString Token { get; set; }
+        public string Token { get; set; }
     }
 }
