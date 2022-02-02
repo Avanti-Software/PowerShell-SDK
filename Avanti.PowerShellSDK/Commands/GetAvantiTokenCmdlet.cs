@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 using Avanti.PowerShellSDK.Core;
 using Avanti.PowerShellSDK.Models;
@@ -83,6 +84,13 @@ namespace Avanti.PowerShellSDK.Commands
 
         protected override void ProcessRecord()
         {
+            GetAvantiTokenResponse @object = ProcessRecordAsync();
+
+            WriteObject(@object);
+        }
+
+        private async Task<GetAvantiTokenResponse> GetToken()
+        {
             var payload = new[]
             {
                 new KeyValuePair<string, string>("client_id", ClientId),
@@ -99,9 +107,7 @@ namespace Avanti.PowerShellSDK.Commands
                 Content = new FormUrlEncodedContent(payload)
             };
 
-            var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead)
-                .GetAwaiter()
-                .GetResult();
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             if (response.IsSuccessStatusCode is false)
             {
@@ -112,11 +118,8 @@ namespace Avanti.PowerShellSDK.Commands
                     null));
             }
 
-            var stream = response.Content.ReadAsStreamAsync()
-                .GetAwaiter()
-                .GetResult();
-
-            var tokenResponse = JsonSerializer.Deserialize<GetAvantiTokenResponse>(stream);
+            var tokenResponse = JsonSerializer.Deserialize<GetAvantiTokenResponse>(
+                await response.Content.ReadAsStreamAsync());
 
             SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
             {
@@ -125,7 +128,16 @@ namespace Avanti.PowerShellSDK.Commands
                 Token = tokenResponse.AccessToken
             });
 
-            WriteObject(tokenResponse);
+            return tokenResponse;
+        }
+
+        private GetAvantiTokenResponse ProcessRecordAsync()
+        {
+            var task = GetToken();
+
+            task.Wait();
+
+            return task.Result;
         }
     }
 }
