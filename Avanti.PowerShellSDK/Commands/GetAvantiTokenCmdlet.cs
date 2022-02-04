@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Management.Automation;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security;
-using System.Text.Json;
 using System.Threading.Tasks;
 
+using Avanti.PowerShellSDK.API;
+using Avanti.PowerShellSDK.API.DTO.Authentication;
 using Avanti.PowerShellSDK.Core;
 using Avanti.PowerShellSDK.Models;
 using Avanti.PowerShellSDK.State;
@@ -14,10 +12,10 @@ using Avanti.PowerShellSDK.State;
 namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Get, "AvantiToken")]
-    [OutputType(typeof(GetAvantiTokenResponse))]
+    [OutputType(typeof(TokenResponseDto))]
     public sealed class GetAvantiTokenCmdlet : PSCmdlet
     {
-        private HttpClient _httpClient;
+        private IAvantiApiClient _apiClient;
 
         [Parameter(
             Mandatory = true,
@@ -68,16 +66,7 @@ namespace Avanti.PowerShellSDK.Commands
                 BaseUrl = Constants.DefaultBaseUrl;
             }
 
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(BaseUrl)
-            };
-
-            _httpClient.DefaultRequestHeaders
-                .Accept
-                .Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
+            _apiClient = new AvantiApiClient(BaseUrl);
 
             SessionState.PSVariable.Set(Constants.AuthenticationKey, null);
         }
@@ -91,44 +80,44 @@ namespace Avanti.PowerShellSDK.Commands
 
         private async Task<GetAvantiTokenResponse> GetToken()
         {
-            var payload = new[]
+            var response = await _apiClient.Authenticate(new AvantiCredentials
             {
-                new KeyValuePair<string, string>("client_id", ClientId),
-                new KeyValuePair<string, string>("client_secret", ClientSecret),
-                new KeyValuePair<string, string>("company", Company),
-                new KeyValuePair<string, string>("device_id", Constants.UserAgent),
-                new KeyValuePair<string, string>("grant_type", "password"),
-                new KeyValuePair<string, string>("username", UserName),
-                new KeyValuePair<string, string>("password", Password)
-            };
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "/api/connect/token")
-            {
-                Content = new FormUrlEncodedContent(payload)
-            };
-
-            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-            if (response.IsSuccessStatusCode is false)
-            {
-                ThrowTerminatingError(new ErrorRecord(
-                    new SecurityException(),
-                    Constants.MissingTokenErrorId,
-                    ErrorCategory.AuthenticationError,
-                    null));
-            }
-
-            var tokenResponse = JsonSerializer.Deserialize<GetAvantiTokenResponse>(
-                await response.Content.ReadAsStreamAsync());
-
-            SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
-            {
-                BaseUrl = BaseUrl,
-                ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
-                Token = tokenResponse.AccessToken
+                ClientId = ClientId,
+                ClientSecret = ClientSecret,
+                Company = Company,
+                UserName = UserName,
+                Password = Password
             });
 
-            return tokenResponse;
+            if (response.StatusCode == 200)
+            {
+                TokenResponseDto tokenResponse = response as TokenResponseDto;
+
+                SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
+                {
+                    BaseUrl = BaseUrl,
+                    ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
+                    Token = tokenResponse.AccessToken
+                });
+
+                return new GetAvantiTokenResponse
+                {
+                    AccessToken = tokenResponse.AccessToken,
+                    AuthenticationState = tokenResponse.AuthenticationState,
+                    Company = tokenResponse.Company,
+                    ExpiresIn = tokenResponse.ExpiresIn,
+                    Scope = tokenResponse.Scope,
+                    TokenType = tokenResponse.TokenType
+                };
+            }
+
+            ThrowTerminatingError(new ErrorRecord(
+                new SecurityException(),
+                Constants.AuthenticationFailedErrorId,
+                ErrorCategory.ConnectionError,
+                null));
+
+            return null;
         }
 
         private GetAvantiTokenResponse ProcessRecordAsync()
