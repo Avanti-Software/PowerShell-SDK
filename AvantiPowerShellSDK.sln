@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avanti.PowerShellSDK", "Avanti.PowerShellSDK\Avanti.PowerShellSDK.csproj", "{EA2E9013-924F-46D1-A7EE-6DCA582F66FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avanti.PowerShellSDK.Tests", "Avanti.PowerShellSDK.Tests\Avanti.PowerShellSDK.Tests.csproj", "{28E27B63-A11D-449A-BC41-77C6510B9EAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avanti.PowerShellSDK.Tests", "Avanti.PowerShellSDK.Tests\Avanti.PowerShellSDK.Tests.csproj", "{28E27B63-A11D-449A-BC41-77C6510B9EAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avanti.SDK", "Avanti.SDK\Avanti.SDK.csproj", "{A9F06CF6-C833-424C-947D-758C78E5900D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{28E27B63-A11D-449A-BC41-77C6510B9EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28E27B63-A11D-449A-BC41-77C6510B9EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28E27B63-A11D-449A-BC41-77C6510B9EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9F06CF6-C833-424C-947D-758C78E5900D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9F06CF6-C833-424C-947D-758C78E5900D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9F06CF6-C833-424C-947D-758C78E5900D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9F06CF6-C833-424C-947D-758C78E5900D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

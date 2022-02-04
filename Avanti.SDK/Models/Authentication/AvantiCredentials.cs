@@ -1,6 +1,4 @@
-﻿using Avanti.PowerShellSDK.Core;
-
-namespace Avanti.PowerShellSDK.API.DTO.Authentication
+﻿namespace Avanti.SDK.Models.Authentication
 {
     public sealed class AvantiCredentials
     {
