@@ -1,10 +1,10 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Avanti.PowerShellSDK.API.DTO.Authentication
+namespace Avanti.SDK.Models.Authentication
 {
-    public sealed class TokenResponseDto : AuthenticationResponseDto
+    public sealed class TokenResponse : AuthenticationResponse
     {
-        public TokenResponseDto()
+        public TokenResponse()
         {
             StatusCode = 200;
         }

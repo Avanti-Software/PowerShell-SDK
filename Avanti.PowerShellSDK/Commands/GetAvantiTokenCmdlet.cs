@@ -3,19 +3,20 @@ using System.Management.Automation;
 using System.Security;
 using System.Threading.Tasks;
 
-using Avanti.PowerShellSDK.API;
-using Avanti.PowerShellSDK.API.DTO.Authentication;
 using Avanti.PowerShellSDK.Core;
 using Avanti.PowerShellSDK.Models;
 using Avanti.PowerShellSDK.State;
 
+using Avanti.SDK;
+using Avanti.SDK.Models.Authentication;
+
 namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Get, "AvantiToken")]
-    [OutputType(typeof(TokenResponseDto))]
+    [OutputType(typeof(TokenResponse))]
     public sealed class GetAvantiTokenCmdlet : PSCmdlet
     {
-        private IAvantiApiClient _apiClient;
+        private IAvantiApi _avantiApi;
 
         [Parameter(
             Mandatory = true,
@@ -61,12 +62,7 @@ namespace Avanti.PowerShellSDK.Commands
 
         protected override void BeginProcessing()
         {
-            if (string.IsNullOrEmpty(BaseUrl))
-            {
-                BaseUrl = Constants.DefaultBaseUrl;
-            }
-
-            _apiClient = new AvantiApiClient(BaseUrl);
+            _avantiApi = new AvantiApi(BaseUrl);
 
             SessionState.PSVariable.Set(Constants.AuthenticationKey, null);
         }
@@ -80,7 +76,7 @@ namespace Avanti.PowerShellSDK.Commands
 
         private async Task<GetAvantiTokenResponse> GetToken()
         {
-            var response = await _apiClient.Authenticate(new AvantiCredentials
+            var response = await _avantiApi.Authenticate(new AvantiCredentials
             {
                 ClientId = ClientId,
                 ClientSecret = ClientSecret,
@@ -91,7 +87,7 @@ namespace Avanti.PowerShellSDK.Commands
 
             if (response.StatusCode == 200)
             {
-                TokenResponseDto tokenResponse = response as TokenResponseDto;
+                TokenResponse tokenResponse = response as TokenResponse;
 
                 SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
                 {
