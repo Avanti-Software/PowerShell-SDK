@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Management.Automation;
-using System.Security;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using Avanti.PowerShellSDK.Core;
-using Avanti.PowerShellSDK.Models;
 using Avanti.PowerShellSDK.State;
 
 using Avanti.SDK;
@@ -13,7 +12,7 @@ using Avanti.SDK.Models.Authentication;
 namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Get, "AvantiToken")]
-    [OutputType(typeof(TokenResponse))]
+    [OutputType(typeof(AvantiToken))]
     public sealed class GetAvantiTokenCmdlet : PSCmdlet
     {
         private IAvantiApi _avantiApi;
@@ -69,54 +68,46 @@ namespace Avanti.PowerShellSDK.Commands
 
         protected override void ProcessRecord()
         {
-            GetAvantiTokenResponse @object = ProcessRecordAsync();
+            var @object = ProcessRecordAsync();
 
             WriteObject(@object);
         }
 
-        private async Task<GetAvantiTokenResponse> GetToken()
+        private async Task<AvantiToken> GetToken()
         {
-            var response = await _avantiApi.Authenticate(new AvantiCredentials
+            try
             {
-                ClientId = ClientId,
-                ClientSecret = ClientSecret,
-                Company = Company,
-                UserName = UserName,
-                Password = Password
-            });
-
-            if (response.StatusCode == 200)
-            {
-                TokenResponse tokenResponse = response as TokenResponse;
+                AvantiToken token = await _avantiApi.GetTokenAsync(new AvantiCredentials
+                {
+                    ClientId = ClientId,
+                    ClientSecret = ClientSecret,
+                    Company = Company,
+                    UserName = UserName,
+                    Password = Password
+                });
 
                 SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
                 {
                     BaseUrl = BaseUrl,
-                    ExpiresAt = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
-                    Token = tokenResponse.AccessToken
+                    ExpiresAt = DateTime.UtcNow.AddSeconds(token.ExpiresIn),
+                    Token = token.AccessToken
                 });
 
-                return new GetAvantiTokenResponse
-                {
-                    AccessToken = tokenResponse.AccessToken,
-                    AuthenticationState = tokenResponse.AuthenticationState,
-                    Company = tokenResponse.Company,
-                    ExpiresIn = tokenResponse.ExpiresIn,
-                    Scope = tokenResponse.Scope,
-                    TokenType = tokenResponse.TokenType
-                };
+                return token;
             }
+            catch (HttpRequestException exception)
+            {
+                ThrowTerminatingError(new ErrorRecord(
+                    exception,
+                    exception.HResult.ToString(),
+                    ErrorCategory.ConnectionError,
+                    null));
 
-            ThrowTerminatingError(new ErrorRecord(
-                new SecurityException(),
-                Constants.AuthenticationFailedErrorId,
-                ErrorCategory.ConnectionError,
-                null));
-
-            return null;
+                return null;
+            }
         }
 
-        private GetAvantiTokenResponse ProcessRecordAsync()
+        private AvantiToken ProcessRecordAsync()
         {
             var task = GetToken();
 
