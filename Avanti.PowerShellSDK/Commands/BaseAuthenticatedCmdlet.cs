@@ -2,7 +2,7 @@
 using System.Management.Automation;
 using System.Security;
 
-using Avanti.PowerShellSDK.Core;
+using Avanti.PowerShellSDK.Internal;
 using Avanti.PowerShellSDK.State;
 
 namespace Avanti.PowerShellSDK.Commands

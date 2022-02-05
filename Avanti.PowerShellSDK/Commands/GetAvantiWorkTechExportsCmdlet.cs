@@ -1,6 +1,4 @@
-﻿using System.Management.Automation;
-
-namespace Avanti.PowerShellSDK.Commands
+﻿namespace Avanti.PowerShellSDK.Commands
 {
     public sealed class GetAvantiWorkTechExportsCmdlet : BaseAuthenticatedCmdlet
     {

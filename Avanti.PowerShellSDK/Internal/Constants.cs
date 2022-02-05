@@ -1,4 +1,4 @@
-﻿namespace Avanti.PowerShellSDK.Core
+﻿namespace Avanti.PowerShellSDK.Internal
 {
     internal class Constants
     {

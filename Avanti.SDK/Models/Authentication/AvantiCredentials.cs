@@ -1,4 +1,6 @@
-﻿namespace Avanti.SDK.Models.Authentication
+﻿using Avanti.SDK.Internal;
+
+namespace Avanti.SDK.Models.Authentication
 {
     public sealed class AvantiCredentials
     {

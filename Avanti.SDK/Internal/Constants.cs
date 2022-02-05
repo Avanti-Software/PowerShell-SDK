@@ -1,4 +1,4 @@
-﻿namespace Avanti.SDK
+﻿namespace Avanti.SDK.Internal
 {
     internal static class Constants
     {
