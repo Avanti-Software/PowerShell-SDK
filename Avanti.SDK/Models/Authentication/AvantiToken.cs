@@ -2,13 +2,11 @@
 
 namespace Avanti.SDK.Models.Authentication
 {
-    public sealed class TokenResponse : AuthenticationResponse
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class AvantiToken
     {
-        public TokenResponse()
-        {
-            StatusCode = 200;
-        }
-
         [JsonPropertyName("access_token")]
         public string AccessToken { get; set; }
 
