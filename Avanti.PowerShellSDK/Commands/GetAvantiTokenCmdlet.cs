@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using Avanti.PowerShellSDK.Internal;
@@ -61,7 +64,14 @@ namespace Avanti.PowerShellSDK.Commands
 
         protected override void BeginProcessing()
         {
-            _avantiApi = new AvantiApi(BaseUrl);
+            _avantiApi = new AvantiApi(new AvantiCredentials
+            {
+                ClientId = ClientId,
+                ClientSecret = ClientSecret,
+                Company = Company,
+                UserName = UserName,
+                Password = Password
+            }, BaseUrl);
 
             SessionState.PSVariable.Set(Constants.AuthenticationKey, null);
         }
@@ -75,36 +85,35 @@ namespace Avanti.PowerShellSDK.Commands
 
         private async Task<AvantiToken> GetToken()
         {
-            try
+            HttpContent content = new FormUrlEncodedContent(new[]
             {
-                AvantiToken token = await _avantiApi.GetTokenAsync(new AvantiCredentials
-                {
-                    ClientId = ClientId,
-                    ClientSecret = ClientSecret,
-                    Company = Company,
-                    UserName = UserName,
-                    Password = Password
-                });
+                new KeyValuePair<string, string>("client_id", ClientId),
+                new KeyValuePair<string, string>("client_secret", ClientSecret),
+                new KeyValuePair<string, string>("company", Company),
+                new KeyValuePair<string, string>("device_id", Constants.UserAgent),
+                new KeyValuePair<string, string>("grant_type", "password"),
+                new KeyValuePair<string, string>("username", UserName),
+                new KeyValuePair<string, string>("password", Password)
+            });
 
-                SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
-                {
-                    BaseUrl = BaseUrl,
-                    ExpiresAt = DateTime.UtcNow.AddSeconds(token.ExpiresIn),
-                    Token = token.AccessToken
-                });
-
-                return token;
-            }
-            catch (HttpRequestException exception)
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
             {
-                ThrowTerminatingError(new ErrorRecord(
-                    exception,
-                    exception.HResult.ToString(),
-                    ErrorCategory.ConnectionError,
-                    null));
+                CharSet = "UTF-8"
+            };
 
-                return null;
-            }
+            HttpResponseMessage response = await _avantiApi.PostAsync("/api/connect/token", content);
+
+            AvantiToken token = JsonSerializer.Deserialize<AvantiToken>(
+                await response.Content.ReadAsStreamAsync());
+
+            SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
+            {
+                BaseUrl = BaseUrl,
+                ExpiresAt = DateTimeOffset.Now.AddSeconds(token.ExpiresIn),
+                Token = token.AccessToken
+            });
+
+            return token;
         }
 
         private AvantiToken ProcessRecordAsync()
