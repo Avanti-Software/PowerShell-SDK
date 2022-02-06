@@ -16,6 +16,8 @@ namespace Avanti.PowerShellSDK.Tests.Commands
                 ClientId = "12345"
             };
 
+            cmdlet.Invoke();
+
             Assert.IsNotNull(cmdlet);
         }
     }
