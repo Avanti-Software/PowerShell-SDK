@@ -21,13 +21,17 @@ namespace Avanti.SDK
 
         private AsyncPolicyWrap<HttpResponseMessage> _effectivePolicy;
 
-        public AvantiApi(AvantiCredentials credentials, string baseUrl = null)
+        public AvantiApi(AvantiCredentials credentials)
+            : this(credentials, Constants.DefaultBaseUrl)
+        { }
+
+        public AvantiApi(AvantiCredentials credentials, string baseUrl)
         {
             _credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
 
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(baseUrl ?? Constants.DefaultBaseUrl)
+                BaseAddress = new Uri(baseUrl)
             };
 
             _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
@@ -38,7 +42,11 @@ namespace Avanti.SDK
             InitializePolicies();
         }
 
-        public AvantiApi(AvantiToken token, string baseUrl = null)
+        public AvantiApi(AvantiToken token)
+            : this(token, Constants.DefaultBaseUrl)
+        { }
+
+        public AvantiApi(AvantiToken token, string baseUrl)
         {
             if (token == null)
             {
@@ -47,7 +55,7 @@ namespace Avanti.SDK
 
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(baseUrl ?? Constants.DefaultBaseUrl)
+                BaseAddress = new Uri(baseUrl)
             };
 
             _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
