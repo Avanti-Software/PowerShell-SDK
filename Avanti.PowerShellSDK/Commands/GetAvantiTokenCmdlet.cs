@@ -25,6 +25,7 @@ namespace Avanti.PowerShellSDK.Commands
             Position = 0,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
         public string UserName { get; set; }
 
         [Parameter(
@@ -32,6 +33,7 @@ namespace Avanti.PowerShellSDK.Commands
             Position = 1,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
         public string Password { get; set; }
 
         [Parameter(
@@ -39,6 +41,7 @@ namespace Avanti.PowerShellSDK.Commands
             Position = 2,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
         public string Company { get; set; }
 
         [Parameter(
@@ -46,6 +49,7 @@ namespace Avanti.PowerShellSDK.Commands
             Position = 3,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
         public string ClientId { get; set; }
 
         [Parameter(
@@ -53,6 +57,7 @@ namespace Avanti.PowerShellSDK.Commands
             Position = 4,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
         public string ClientSecret { get; set; }
 
         [Parameter(
