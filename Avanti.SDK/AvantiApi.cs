@@ -17,8 +17,8 @@ namespace Avanti.SDK
     public class AvantiApi : IAvantiApi
     {
         private readonly AvantiCredentials _credentials;
-        private readonly HttpClient _httpClient;
 
+        private HttpClient _httpClient;
         private AsyncPolicyWrap<HttpResponseMessage> _effectivePolicy;
 
         public AvantiApi(AvantiCredentials credentials)
@@ -29,16 +29,7 @@ namespace Avanti.SDK
         {
             _credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
 
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(baseUrl)
-            };
-
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgent);
-
-            _httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
+            InitializeHttpClient(baseUrl);
             InitializePolicies();
         }
 
@@ -53,6 +44,12 @@ namespace Avanti.SDK
                 throw new ArgumentNullException(nameof(token));
             }
 
+            InitializeHttpClient(baseUrl, token.AccessToken);
+            InitializePolicies();
+        }
+
+        private void InitializeHttpClient(string baseUrl, string accessToken = null)
+        {
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri(baseUrl)
@@ -63,10 +60,11 @@ namespace Avanti.SDK
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token.AccessToken);
-
-            InitializePolicies();
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", accessToken);
+            }
         }
 
         private void InitializePolicies()

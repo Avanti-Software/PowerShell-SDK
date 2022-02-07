@@ -103,6 +103,15 @@ namespace Avanti.PowerShellSDK.Commands
 
             HttpResponseMessage response = await _avantiApi.PostAsync("/api/connect/token", content);
 
+            if (!response.IsSuccessStatusCode)
+            {
+                ThrowTerminatingError(new ErrorRecord(
+                    new HttpRequestException(response.ReasonPhrase),
+                    Constants.AuthenticationErrorId,
+                    ErrorCategory.AuthenticationError,
+                    response));
+            }
+
             AvantiToken token = JsonSerializer.Deserialize<AvantiToken>(
                 await response.Content.ReadAsStreamAsync());
 
