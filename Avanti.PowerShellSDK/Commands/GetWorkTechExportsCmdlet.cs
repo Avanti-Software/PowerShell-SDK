@@ -6,7 +6,7 @@ namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Get, "AvantiWorkTechExports")]
     [OutputType(typeof(WorkTechExport))]
-    public sealed class GetAvantiWorkTechExportsCmdlet : BaseAuthenticatedCmdlet
+    public sealed class GetWorkTechExportsCmdlet : BaseAuthenticatedCmdlet
     {
         [Parameter(
             Mandatory = false,
