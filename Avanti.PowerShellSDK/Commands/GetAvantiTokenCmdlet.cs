@@ -88,9 +88,17 @@ namespace Avanti.PowerShellSDK.Commands
             WriteObject(@object);
         }
 
+        private AvantiToken ProcessRecordAsync()
+        {
+            var task = GetToken();
+            task.Wait();
+
+            return task.Result;
+        }
+
         private async Task<AvantiToken> GetToken()
         {
-            HttpContent content = new FormUrlEncodedContent(new[]
+            var dto = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("client_id", ClientId),
                 new KeyValuePair<string, string>("client_secret", ClientSecret),
@@ -99,7 +107,11 @@ namespace Avanti.PowerShellSDK.Commands
                 new KeyValuePair<string, string>("grant_type", "password"),
                 new KeyValuePair<string, string>("username", UserName),
                 new KeyValuePair<string, string>("password", Password)
-            });
+            };
+
+            string json = JsonSerializer.Serialize(dto);
+
+            HttpContent content = new StringContent(json);
 
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
             {
@@ -130,13 +142,6 @@ namespace Avanti.PowerShellSDK.Commands
             return token;
         }
 
-        private AvantiToken ProcessRecordAsync()
-        {
-            var task = GetToken();
-
-            task.Wait();
-
-            return task.Result;
-        }
+        
     }
 }
