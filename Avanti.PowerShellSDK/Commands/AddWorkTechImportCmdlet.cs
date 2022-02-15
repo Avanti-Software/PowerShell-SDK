@@ -20,38 +20,129 @@ namespace Avanti.PowerShellSDK.Commands
             ValueFromPipelineByPropertyName = true)]
         public string AccessToken { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 1,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public int TransactionNo { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 2,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public int BatchNo { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 3,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
         [ValidateLength(0, 9)]
         public string EmployeeNo { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 4,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public DateTime WorkDateTime { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 5,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public decimal Hours { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 6,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateLength(0, 9)]
         public string PayCode { get; set; }
 
+        [Parameter(
+            Mandatory = false,
+            Position = 7,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateLength(0, 12)]
         public string Position { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 8,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateLength(0, 9)]
         public string ShiftId { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 9,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
+        [ValidateLength(0, 15)]
         public string WorkTechJob { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 10,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
+        [ValidateLength(0, 15)]
         public string WorkTechActivity { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 11,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateLength(0, 9)]
         public string TaskId { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 12,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public int OTOption { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 13,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        [ValidateNotNullOrEmpty]
+        [ValidateLength(0, 60)]
         public string GLAccount { get; set; }
 
+        [Parameter(
+            Mandatory = true,
+            Position = 14,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public int Status { get; set; }
 
+        [Parameter(
+            Mandatory = false,
+            Position = 15,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         public string ImportedBy { get; set; }
 
-        public DateTime ImportedDate { get; set; }
+        [Parameter(
+            Mandatory = false,
+            Position = 16,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        public DateTime? ImportedDate { get; set; }
 
         protected override void ProcessRecord()
         {
@@ -87,7 +178,7 @@ namespace Avanti.PowerShellSDK.Commands
                 GLAccount = GLAccount,
                 Status = Status,
                 ImportedBy = ImportedBy,
-                ImportedDate = ImportedDate
+                ImportedDate = ImportedDate ?? DateTime.UtcNow
             };
 
             string json = JsonSerializer.Serialize(dto);
@@ -97,7 +188,7 @@ namespace Avanti.PowerShellSDK.Commands
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json")
             {
                 CharSet = "UTF-8"
-            };            
+            };
 
             HttpResponseMessage response = await AvantiApi.PostAsync("/api/worktech/import", content);
 
