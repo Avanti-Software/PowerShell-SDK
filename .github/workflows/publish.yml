@@ -1,8 +1,0 @@
-name: Publish to PowerShell Gallery
-
-on:
-  release:
-    types: [ created ]
-
-jobs:
-  
