@@ -33,18 +33,14 @@ namespace Avanti.SDK
             InitializePolicies();
         }
 
-        public AvantiApi(AvantiToken token)
-            : this(token, Constants.DefaultBaseUrl)
-        { }
-
-        public AvantiApi(AvantiToken token, string baseUrl)
+        public AvantiApi(string token, string baseUrl = Constants.DefaultBaseUrl)
         {
             if (token == null)
             {
                 throw new ArgumentNullException(nameof(token));
             }
 
-            InitializeHttpClient(baseUrl, token.AccessToken);
+            InitializeHttpClient(baseUrl, token);
             InitializePolicies();
         }
 
@@ -100,7 +96,7 @@ namespace Avanti.SDK
             _effectivePolicy = tokenPolicy.WrapAsync(retryPolicy);
         }
 
-        internal async Task<AvantiToken> GetTokenAsync()
+        public async Task<AvantiToken> GetTokenAsync()
         {
             HttpContent content = new FormUrlEncodedContent(new[]
             {
@@ -140,7 +136,7 @@ namespace Avanti.SDK
             };
 
             return _effectivePolicy.ExecuteAsync(() =>
-                _httpClient.SendAsync(request));
+               _httpClient.SendAsync(request));
         }
 
         public Task<HttpResponseMessage> PutAsync(string resource, HttpContent content)

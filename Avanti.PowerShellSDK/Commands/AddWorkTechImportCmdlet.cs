@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Management.Automation;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
+using Avanti.SDK;
+using Avanti.SDK.Extensions.WorkTech;
 using Avanti.SDK.Models.WorkTech;
+
+[assembly: InternalsVisibleTo("Avanti.PowerShellSDK.Tests")]
 
 namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Add, "AvantiWorkTechImport")]
     [OutputType(typeof(WorkTechImport))]
-    public sealed class AddWorkTechImportCmdlet : BaseAuthenticatedCmdlet
+    public sealed class AddWorkTechImportCmdlet : PSCmdlet
     {
+        private IAvantiApi _avantiApi;
+
         [Parameter(
-            Mandatory = false,
+            Mandatory = true,
             Position = 0,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
@@ -144,6 +148,25 @@ namespace Avanti.PowerShellSDK.Commands
             ValueFromPipelineByPropertyName = true)]
         public DateTime? ImportedDate { get; set; }
 
+        [Parameter(
+            Mandatory = false,
+            Position = 5,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
+        public string BaseUrl { get; set; }
+
+        internal void ProcessInternal()
+        {
+            BeginProcessing();
+            ProcessRecord();
+            EndProcessing();
+        }
+
+        protected override void BeginProcessing()
+        {
+            _avantiApi = new AvantiApi(AccessToken, BaseUrl);
+        }
+
         protected override void ProcessRecord()
         {
             var @object = ProcessRecordAsync();
@@ -181,30 +204,7 @@ namespace Avanti.PowerShellSDK.Commands
                 ImportedDate = ImportedDate ?? DateTime.UtcNow
             };
 
-            string json = JsonSerializer.Serialize(dto);
-
-            HttpContent content = new StringContent(json);
-
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json")
-            {
-                CharSet = "UTF-8"
-            };
-
-            HttpResponseMessage response = await AvantiApi.PostAsync("/api/worktech/import", content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                ThrowTerminatingError(new ErrorRecord(
-                    new HttpRequestException(response.ReasonPhrase),
-                    $"{response.StatusCode}",
-                    ErrorCategory.InvalidOperation,
-                    response));
-            }
-
-            WorkTechImport result = JsonSerializer.Deserialize<WorkTechImport>(
-                await response.Content.ReadAsStreamAsync());
-
-            return result;
+            return await _avantiApi.AddWorkTechImport(dto);
         }
     }
 }

@@ -2,9 +2,6 @@
 
 namespace Avanti.SDK.Models.Authentication
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public sealed class AvantiToken
     {
         [JsonPropertyName("access_token")]

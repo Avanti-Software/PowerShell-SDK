@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Management.Automation;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 using Avanti.PowerShellSDK.Internal;
-using Avanti.PowerShellSDK.State;
 
 using Avanti.SDK;
 using Avanti.SDK.Models.Authentication;
+
+[assembly: InternalsVisibleTo("Avanti.PowerShellSDK.Tests")]
 
 namespace Avanti.PowerShellSDK.Commands
 {
@@ -61,11 +63,18 @@ namespace Avanti.PowerShellSDK.Commands
         public string ClientSecret { get; set; }
 
         [Parameter(
-            Mandatory = false,
+            Mandatory = true,
             Position = 5,
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true)]
         public string BaseUrl { get; set; }
+
+        internal void ProcessInternal()
+        {
+            BeginProcessing();
+            ProcessRecord();
+            EndProcessing();
+        }
 
         protected override void BeginProcessing()
         {
@@ -77,8 +86,6 @@ namespace Avanti.PowerShellSDK.Commands
                 UserName = UserName,
                 Password = Password
             }, BaseUrl);
-
-            SessionState.PSVariable.Set(Constants.AuthenticationKey, null);
         }
 
         protected override void ProcessRecord()
@@ -98,7 +105,7 @@ namespace Avanti.PowerShellSDK.Commands
 
         private async Task<AvantiToken> GetToken()
         {
-            var dto = new List<KeyValuePair<string, string>>
+            HttpContent content = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("client_id", ClientId),
                 new KeyValuePair<string, string>("client_secret", ClientSecret),
@@ -107,11 +114,7 @@ namespace Avanti.PowerShellSDK.Commands
                 new KeyValuePair<string, string>("grant_type", "password"),
                 new KeyValuePair<string, string>("username", UserName),
                 new KeyValuePair<string, string>("password", Password)
-            };
-
-            string json = JsonSerializer.Serialize(dto);
-
-            HttpContent content = new StringContent(json);
+            });
 
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded")
             {
@@ -129,19 +132,8 @@ namespace Avanti.PowerShellSDK.Commands
                     response));
             }
 
-            AvantiToken token = JsonSerializer.Deserialize<AvantiToken>(
+            return JsonSerializer.Deserialize<AvantiToken>(
                 await response.Content.ReadAsStreamAsync());
-
-            SessionState.PSVariable.Set(Constants.AuthenticationKey, new AuthenticationState
-            {
-                BaseUrl = BaseUrl,
-                ExpiresAt = DateTimeOffset.Now.AddSeconds(token.ExpiresIn),
-                Token = token.AccessToken
-            });
-
-            return token;
         }
-
-        
     }
 }
