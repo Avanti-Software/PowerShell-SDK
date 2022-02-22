@@ -1,12 +1,15 @@
 ﻿using System.Management.Automation;
+using System.Runtime.CompilerServices;
 
 using Avanti.SDK.Models.WorkTech;
+
+[assembly: InternalsVisibleTo("Avanti.PowerShellSDK.Tests")]
 
 namespace Avanti.PowerShellSDK.Commands
 {
     [Cmdlet(VerbsCommon.Get, "AvantiWorkTechExports")]
     [OutputType(typeof(WorkTechExport))]
-    public sealed class GetWorkTechExportsCmdlet : BaseAuthenticatedCmdlet
+    public sealed class GetWorkTechExportsCmdlet : PSCmdlet
     {
         [Parameter(
             Mandatory = false,

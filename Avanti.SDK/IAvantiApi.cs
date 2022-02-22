@@ -12,6 +12,5 @@ namespace Avanti.SDK
         Task<HttpResponseMessage> PutAsync(string resource, HttpContent content);
 
         Task<HttpResponseMessage> DeleteAsync(string resource);
-
     }
 }
