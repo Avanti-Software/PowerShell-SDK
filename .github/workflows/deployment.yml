@@ -21,7 +21,6 @@ jobs:
       - name: Prepare PowerShell manifest
         run: |
           cp Avanti.PowerShellSDK.psd1 publish\Avanti.PowerShellSDK
-        shell: pwsh
         
       - name: Publish to PSGallery
         run: |
