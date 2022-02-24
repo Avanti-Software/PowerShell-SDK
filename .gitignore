@@ -177,7 +177,7 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
-# Click-Once directory
+# GitHub Actions
 publish/
 
 # Publish Web Output
