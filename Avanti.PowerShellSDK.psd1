@@ -1,6 +1,6 @@
 @{
     RootModule = 'Avanti.PowerShellSDK.dll'
-    ModuleVersion = '1.0'
+    ModuleVersion = '1.0.0'
     CmdletsToExport = '*'
     GUID = '8432a355-b895-480b-8867-ecc42cc02fc5'
     Author = 'Adam Stirtan'
