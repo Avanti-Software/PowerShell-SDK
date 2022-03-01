@@ -12,15 +12,22 @@ Create scripts that can be scheduled tasks or run your scripts in the cloud when
 
 Avanti 💖s HR
 
-## Getting started
+## Installation
 
-Look for our module on https://www.powershellgallery.com/ soon!
+```powershell
+PS> Install-Module -Name Avanti.PowerShellSDK
+```
+
+Learn more at https://www.powershellgallery.com/packages/Avanti.PowerShellSDK
 
 ### Building from source
 
 The Cmdlet project targets .NET Standard 2.0 and the test project targets .NET 6.
 
-`dotnet build`
+```powershell
+PS> dotnet build
+PS> Import-Module .\Avanti.PowerShellSDK.dll
+```
 
 ### Authors
 
